@@ -1,0 +1,28 @@
+{
+  "report_date": "2026-07-06",
+  "word_count": 111,
+  "top_themes": [
+    {
+      "name": "Pricing, Refund & Customer Support",
+      "summary": "Customers are unhappy with pricing and refund policies"
+    },
+    {
+      "name": "Delivery Speed & Partner Behavior",
+      "summary": "Delivery speed and partner behavior are causing issues"
+    },
+    {
+      "name": "App Performance & Usability",
+      "summary": "App performance and usability need improvement"
+    }
+  ],
+  "verbatim_quotes": [
+    "burnt recipe does not reflected in my menu and I received, and in just in a sec Swiggy confirmed with resturant and reverted to me it's their recipe",
+    "worst ever delivery app",
+    "im using this app for long time but recent I'm facing order with online payment issue"
+  ],
+  "action_ideas": [
+    "Implement transparent pricing and refund policies",
+    "Optimize delivery speed and partner behavior through better logistics",
+    "Improve app performance and usability through regular updates and testing"
+  ]
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "review_id": "swg_app_live_001",
+    "store": "APPLE_APP_STORE",
+    "user_name": "Amit Kumar",
+    "rating": 1,
+    "title": "GPS live tracking freeze on iPhone",
+    "body": "The live map tracking freezes completely on iOS 17.4 during food delivery. I have to force close and reopen the app every 5 minutes.",
+    "submitted_at": "2026-07-05T08:55:22Z"
+  },
+  {
+    "review_id": "swg_app_live_002",
+    "store": "APPLE_APP_STORE",
+    "user_name": "Sneha Roy",
+    "rating": 2,
+    "title": "Instamart items missing",
+    "body": "Ordered milk and bread via Instamart. Bread was missing and support chat bot refused a refund.",
+    "submitted_at": "2026-07-05T08:55:22Z"
+  }
+]

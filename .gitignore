@@ -1,0 +1,20 @@
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Environment variables & secrets
+.env
+*.env
+!.env.example
+
+# Cache and temporary files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.DS_Store
+
+# Local archives and test data outputs
+archives/failed_mcp_delivery/
+*.log

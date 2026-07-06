@@ -1,0 +1,84 @@
+================================================================================
+PROJECT: REVIEW PULSATOR
+DOCUMENT: PROBLEM STATEMENT & SYSTEM SPECIFICATION
+================================================================================
+
+1. EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+Product teams, support specialists, and leadership often drown in raw user reviews across the Apple App Store and Google Play Store. While valuable real-time feedback is publicly available, extracting actionable insights requires manual reading, sorting, and synthesis—a process that is time-consuming and prone to subjective bias. 
+
+The goal of "Review Pulsator" is to transform raw mobile-store feedback into an automated, scannable weekly pulse that teams can digest in minutes: highlighting what users care about, what they actually said, and what steps to take next. By aggregating recent public reviews, clustering them into distinct themes, summarizing key insights, and automatically delivering that insight through familiar surfaces (Google Docs for the written pulse and Gmail for a draft email), the system bridges the gap between user sentiment and concrete action without requiring bespoke authentication or REST API wiring.
+
+
+2. TARGET AUDIENCE & VALUE PROPOSITION
+--------------------------------------------------------------------------------
+• Product / Growth Teams
+  - Why: Enables data-driven prioritization of bug fixes, UX enhancements, and feature requests directly grounded in real user signals rather than anecdotal assumptions.
+• Support Teams
+  - Why: Aligns customer communication and support messaging with the exact pain points, sentiment, and phrasing users are currently experiencing in the wild.
+• Executive Leadership
+  - Why: Provides a high-level, one-page health check of product sentiment and emerging trends without requiring leaders to drown in raw unstructured reviews.
+
+
+3. END-TO-END WORKFLOW & FUNCTIONAL REQUIREMENTS
+--------------------------------------------------------------------------------
+The system must execute a seamless, automated four-step pipeline:
+
+Step 1: Review Ingestion & Preprocessing
+• Ingest recent public review exports from the Apple App Store and Google Play Store covering roughly the last 8–12 weeks.
+• Parse standard metadata fields provided by the export (such as star rating, review title, body text, and submission date).
+• Filter and sanitize data to ensure readiness for downstream NLP and clustering.
+
+Step 2: Clustering & Theming Engine
+• Group the ingested reviews into at most five (5) high-level product themes tailored to Swiggy (examples: delivery speed & partner behavior, order accuracy & packaging, Instamart & grocery availability, pricing & Swiggy One coupons, app performance & GPS tracking).
+• Distill the clustered data to identify the top three (3) most prominent themes driving user sentiment for the current weekly cycle.
+
+Step 3: One-Page Weekly Pulse Generation
+• Generate a highly scannable, executive-ready weekly summary note (≤250 words where applicable).
+• The weekly pulse must strictly include:
+  1. Top 3 Themes: What people are talking about most.
+  2. Real User Quotes: Three (3) verbatim snippets extracted directly from actual reviews (no synthetic or invented wording).
+  3. Action Ideas: Three (3) concrete next steps directly grounded in the identified themes.
+
+Step 4: Stakeholder Delivery & Distribution
+• Google Docs Integration: Automatically publish or update the one-page weekly note in a Google Document where stakeholders can easily read, comment, and collaborate.
+• Gmail Integration: Create a draft email addressed to yourself (or a designated alias) that contains either the full weekly note or a clear pointer/link to the published Google Document.
+
+
+4. TECHNICAL ARCHITECTURE & INTEGRATION STRATEGY (MCP-FIRST)
+--------------------------------------------------------------------------------
+To maintain architectural consistency with workspace tooling and avoid redundant authentication plumbing, the project mandates an MCP-First (Model Context Protocol) integration pattern:
+
+• No Bespoke OAuth / REST Wiring: The application must NOT implement standalone OAuth 2.0 client flows or manual HTTP REST client code as the primary integration path for Google Workspace APIs.
+• MCP Server Utilization: All interactions with Google Docs (creating or updating the pulse document) and Gmail (creating the draft message) must be performed by calling tools exposed by local or environment-provided MCP servers.
+• Architectural Benefits:
+  - Eliminates boilerplate OAuth client setup, token handling, and HTTP REST plumbing.
+  - Ensures consistent integration patterns across agent tooling and execution environments.
+  - Decouples core analytical logic (review aggregation and clustering) from external delivery mechanisms.
+
+
+5. KEY CONSTRAINTS & GUARDRAILS
+--------------------------------------------------------------------------------
+• Compliance & Public Data Only:
+  - Strictly utilize public review exports only.
+  - No scraping behind store login walls or any automated data extraction that violates Apple App Store or Google Play Terms of Service (ToS).
+• Clustering & Presentation Scope:
+  - Maximum of 5 themes for clustering review data.
+  - The written pulse highlights exactly the top 3 themes.
+• Length & Scannability:
+  - Keep the note scannable and concise, adhering to ≤250 words where applicable.
+• Strict Privacy & PII Stripping:
+  - Do not include Personally Identifiable Information (PII) in any generated artifact.
+  - Absolutely no reviewer usernames, email addresses, device IDs, or other identifiable reviewer data.
+  - All user quotes must be fully anonymous and stripped of identifying details as needed.
+
+
+6. DEFINITION OF DONE (DoD)
+--------------------------------------------------------------------------------
+The project is considered complete when:
+1. The ingestion pipeline successfully loads and filters 8–12 weeks of public review export data.
+2. The clustering and synthesis engine categorizes reviews into ≤5 themes and outputs a summary containing the top 3 themes, 3 verbatim anonymized quotes, and 3 grounded action items.
+3. An MCP client successfully invokes a Google Docs MCP tool to publish or update the one-page weekly note.
+4. An MCP client successfully invokes a Gmail MCP tool to create a draft email containing the note or a pointer to it, addressed to the user or an alias.
+5. All guardrails—including strict PII removal, word count constraints (≤250 words), and public export compliance—are fully verified.
+================================================================================

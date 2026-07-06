@@ -1,0 +1,28 @@
+{
+  "report_date": "2026-07-05",
+  "word_count": 167,
+  "top_themes": [
+    {
+      "name": "Pricing, Refund & Customer Support",
+      "summary": "Customers are unhappy with pricing and refund policies"
+    },
+    {
+      "name": "Delivery Speed & Partner Behavior",
+      "summary": "Delivery speed and partner behavior are causing frustration"
+    },
+    {
+      "name": "App Performance & Usability",
+      "summary": "App performance and usability need improvement"
+    }
+  ],
+  "verbatim_quotes": [
+    "burnt recipe does not reflected in my menu and I received, and in just in a sec Swiggy confirmed with resturant and reverted to me it's their recipe",
+    "After ordering food if u have any concern they took minimum 30 min to solve it nd many times they dont even solve it nd there bolt delivery is pathetic nd there costumer support are very rude",
+    "it's not working properly they show 1 rs offer at the end it will not even select dont ask me email okay as we don't have that time to go through and chat long mail"
+  ],
+  "action_ideas": [
+    "Implement transparent pricing and refund policies",
+    "Improve delivery speed and partner behavior through better logistics and training",
+    "Optimize app performance and usability through regular updates and user testing"
+  ]
+}
