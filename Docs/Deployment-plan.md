@@ -53,17 +53,16 @@ Designed for hands-off weekly reporting to executive leadership and product team
 * **Trigger Mechanism**: **Google Cloud Scheduler** configured with cron expression `0 9 * * 1` (Every Monday at 9:00 AM UTC).
 * **Execution Flow**: Container boots $\rightarrow$ ingests last 8–12 weeks of store reviews $\rightarrow$ runs PII scrubber and clustering $\rightarrow$ calls Groq 70B $\rightarrow$ invokes remote MCP Server to append to Google Docs and draft Gmail notification $\rightarrow$ shuts down (zero idle compute costs).
 
-### Mode B: Interactive Cloud Dashboard & API Gateway
+### Mode B: Decoupled Cloud Production (Vercel + Hugging Face Spaces)
 Designed for product managers, UX researchers, and support leads who need real-time exploration and on-demand pulse triggers.
-* **Compute Engine**: **Google Cloud Run Service** (continuously listening HTTP container) or **Hugging Face Spaces (Docker Space)**.
-* **API Endpoints**: Serves `/api/status`, `/api/report`, `/api/analytics`, and `/api/trigger_pulse`.
-* **Frontend Hosting**: Serves static UI bundles or provides CORS-enabled REST/SSE APIs for external frontends (such as **Google Stitch**).
+* **Frontend Hosting (Vercel)**: Hosted on **Vercel** (`https://review-pulsator.vercel.app`), serving the `/dashboard` reactive UI bundle. Configured via `vercel.json` with rewrite proxy rules sending `/api/*` traffic cleanly to Hugging Face Spaces without CORS friction.
+* **Backend Inference Engine (Hugging Face Spaces)**: Hosted as a Docker SDK Space on **Hugging Face Spaces** listening on port `7860`. Serves `/api/status`, `/api/report`, `/api/analytics`, and `/api/trigger_pulse`.
 
 ---
 
 ## 3. Environment & Secrets Management
 
-To guarantee zero PII leakage and strict compliance, sensitive credentials must never be hardcoded into container images. All deployments must inject the following configuration parameters via secure vault systems (e.g., **Google Secret Manager**, **AWS Secrets Manager**, or **Infisical**):
+To guarantee zero PII leakage and strict compliance, sensitive credentials must never be hardcoded into container images. All deployments must inject the following configuration parameters via secure vault systems (e.g., **Google Secret Manager**, **Hugging Face Secrets**, or **Infisical**):
 
 | Environment Variable | Requirement | Description / Production Target |
 | :--- | :---: | :--- |
@@ -73,13 +72,13 @@ To guarantee zero PII leakage and strict compliance, sensitive credentials must 
 | `MCP_SERVER_URL` | **Required** | Remote Streamable HTTP endpoint (`https://vgdotcom-google-workspace-mcp.hf.space/sse`). |
 | `PULSATOR_WORD_CEILING` | Optional | Executive note word limit (Default: `250`). |
 | `PULSATOR_THEME_LIMIT` | Optional | Bounded domain cluster ceiling (Default: `5`). |
-| `PORT` | Optional | HTTP binding port for containerized dashboards (Default: `8080`). |
+| `PORT` | Optional | HTTP binding port for containerized dashboards (Default: `7860` on Hugging Face Spaces). |
 
 ---
 
 ## 4. Containerization Strategy (Dockerfile Blueprint)
 
-The core engine is packaged into a hardened, multi-stage Python 3.12 Slim Docker image:
+The core engine is packaged into a hardened, multi-stage Python 3.12 Slim Docker image optimized for Hugging Face Spaces (requiring non-root user UID 1000 and port 7860):
 
 ```dockerfile
 # Stage 1: Build & Dependency Resolution
@@ -89,25 +88,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends build-essential
 COPY requirements.txt .
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
 
-# Stage 2: Hardened Runtime Container
+# Stage 2: Hardened Runtime Container for Hugging Face Spaces
 FROM python:3.12-slim as runtime
 WORKDIR /app
+
+# Hugging Face Spaces sets PORT=7860 by default
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PORT=8080
+    PORT=7860
 
-# Create non-root system user for security compliance
-RUN groupadd -r pulsator && useradd -r -g pulsator pulsator
+# Create non-root system user with UID 1000 (Required by Hugging Face Spaces security policy)
+RUN groupadd -g 1000 user && useradd -u 1000 -g user -m user
 COPY --from=builder /app/wheels /wheels
 COPY --from=builder /app/requirements.txt .
 RUN pip install --no-cache /wheels/*
 
-# Copy application source code
-COPY --chown=pulsator:pulsator . .
-USER pulsator
+# Copy application source code with proper ownership
+COPY --chown=user:user . .
+USER user
 
-# Expose web server port and define entrypoint
-EXPOSE 8080
+# Expose port 7860 for Hugging Face Spaces ingress routing
+EXPOSE 7860
 CMD ["python3", "dashboard_server.py"]
 ```
 

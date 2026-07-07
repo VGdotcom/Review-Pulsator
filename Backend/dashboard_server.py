@@ -27,7 +27,9 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)-8s | 
 
 PORT = int(os.getenv("PORT", 8080))
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-DASHBOARD_DIR = os.path.join(ROOT_DIR, "dashboard")
+DASHBOARD_DIR = os.path.join(os.path.dirname(ROOT_DIR), "frontend")
+if not os.path.exists(DASHBOARD_DIR):
+    DASHBOARD_DIR = os.path.join(ROOT_DIR, "frontend")
 
 
 class PulsatorDashboardHandler(SimpleHTTPRequestHandler):

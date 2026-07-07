@@ -92,3 +92,16 @@ A complete cycle of Review Pulsator is validated when:
 3. The summary is successfully written to a Google Doc via an **MCP tool call**.
 4. A draft notification email is successfully created in Gmail via an **MCP tool call**.
 5. The final output is verified for `≤250 words` and `100% PII exclusion`.
+
+---
+
+## 8. Production Deployment Topology
+
+Review Pulsator is architected for zero-maintenance cloud production deployment:
+
+* **Frontend Presentation Layer (`/dashboard`) → Vercel**:
+  * Hosted as a responsive, reactive web application via **Vercel** (`https://review-pulsator.vercel.app`).
+  * Configured via `vercel.json` with API proxy rewrite rules forwarding `/api/*` traffic cleanly to the backend microservice without CORS friction.
+* **Backend AI Inference Engine (`Dockerfile` & `dashboard_server.py`) → Hugging Face Spaces**:
+  * Hosted as a containerized Docker SDK Space on **Hugging Face Spaces** listening on port `7860`.
+  * Executes the 4-stage pipeline, prompts Groq Llama 3.3 70B, and communicates with the remote Google Workspace MCP microservice via HTTP SSE.

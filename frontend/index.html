@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Pulsator — Google Stitch AI Reactive Dashboard</title>
+    <meta name="description" content="Next-Generation Google Stitch UI for Review Pulsator. Interactive executive sentiment intelligence and live Google Workspace MCP delivery.">
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Left Navigation Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <span class="logo-icon">🛵</span>
+                    <div class="brand-text">
+                        <h2>Review Pulsator</h2>
+                        <span class="brand-subtext">Stitch Dashboard v1.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-action-wrap">
+                <button id="btn-trigger-pulse" class="btn btn-primary btn-run-synthesis glow-effect" title="Run real-time Groq LLM synthesis on latest reviews">
+                    <span class="btn-icon">⚡</span>
+                    <span class="btn-label">Run Synthesis</span>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-group-label">NAVIGATION</div>
+                <button class="nav-item" data-tab="tab-overview">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Pipeline Overview</span>
+                </button>
+                <button class="nav-item" data-tab="tab-themes">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Sentiment Themes</span>
+                </button>
+                <button class="nav-item active" data-tab="tab-pulses">
+                    <span class="nav-icon">📑</span>
+                    <span class="nav-text">Weekly Pulses</span>
+                </button>
+                <button class="nav-item" data-tab="tab-config">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Configuration</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="nav-group-label">WORKSPACE SYNC</div>
+                <div class="sync-item">
+                    <span class="sync-icon">☁️</span>
+                    <div class="sync-info">
+                        <span class="sync-title">Docs Sync</span>
+                        <span class="sync-status text-success">● Synchronized</span>
+                    </div>
+                </div>
+                <div class="sync-item">
+                    <span class="sync-icon">✉️</span>
+                    <div class="sync-info">
+                        <span class="sync-title">Email Sync</span>
+                        <span class="sync-status text-primary">● Active Drafts</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-wrapper">
+            <!-- Top Header Bar -->
+            <header class="top-header">
+                <div class="header-left">
+                    <!-- Horizontal Tab Navigation matching Stitch Screen -->
+                    <nav class="header-tabs" aria-label="Primary Views">
+                        <button class="tab-link" data-tab="tab-overview">Pipeline Overview</button>
+                        <button class="tab-link" data-tab="tab-themes">Sentiment Themes</button>
+                        <button class="tab-link active" data-tab="tab-pulses">Weekly Pulses</button>
+                        <button class="tab-link" data-tab="tab-config">Configuration</button>
+                    </nav>
+                </div>
+
+                <div class="header-right">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="global-search" placeholder="Search insights..." aria-label="Search insights">
+                    </div>
+                    
+                    <button class="icon-btn" id="btn-view-design" title="View Original Stitch Design Mockups">
+                        <span class="icon">🎨</span>
+                    </button>
+                    
+                    <button class="icon-btn" id="btn-theme-toggle" title="Toggle Light/Dark Theme">
+                        <span class="icon">🌓</span>
+                    </button>
+
+                    <div class="status-pill badge-live" id="server-status-badge">
+                        <span class="pulse-dot"></span>
+                        <span id="status-text">AI ONLINE</span>
+                    </div>
+
+                    <div class="user-avatar" title="Product Manager Workspace">
+                        <span>👤</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="content-body">
+                <!-- VIEW 1: WEEKLY PULSES (Active by Default - Stitch Image 1) -->
+                <section id="tab-pulses" class="tab-content active">
+                    <div class="section-header-row">
+                        <div>
+                            <h1 class="page-title">Weekly Pulse History</h1>
+                            <p class="page-subtitle">Automated synthesis of customer feedback, technical debt reports, and sentiment trends across all channels.</p>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary btn-filter">
+                                <span>🎚️ Filter</span>
+                            </button>
+                            <button class="btn btn-primary btn-new-pulse" onclick="triggerLivePulse()">
+                                <span>+ New Pulse</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="pulse-loading-spinner" class="loading-banner" style="display: none;">
+                        <div class="spinner"></div>
+                        <div class="loading-text">
+                            <h3>Running Live Groq 70B Synthesis &amp; MCP Delivery...</h3>
+                            <p>Vectorizing reviews, executing bounded domain clustering, and appending report to Google Docs.</p>
+                        </div>
+                    </div>
+
+                    <!-- Top Split Grid: Featured Bento Card (Left) & Sentiment Stats (Right) -->
+                    <div class="pulses-bento-grid">
+                        <!-- Featured Executive Summary Card -->
+                        <div class="bento-card featured-pulse-card">
+                            <div class="featured-header">
+                                <div class="pulse-meta-tags">
+                                    <span class="badge badge-indigo">LATEST PULSE</span>
+                                    <span class="pulse-date" id="featured-date">Oct 21 - Oct 27, 2024</span>
+                                </div>
+                                <div class="pulse-icons">
+                                    <a id="btn-open-gdoc" href="https://docs.google.com/document/d/17Uam8Sm6woB9Ten1lsRNepKUtAVklsFsl6ItI59sEdk/edit" target="_blank" rel="noopener noreferrer" class="icon-pill" title="Open Google Workspace Document">📄</a>
+                                    <span class="icon-pill" title="Target Email: test@example.com">@</span>
+                                </div>
+                            </div>
+
+                            <h2 class="featured-title" id="featured-title">Executive Summary: Core Stability &amp; Delivery Focus</h2>
+
+                            <div class="featured-columns">
+                                <div class="col-themes">
+                                    <h3 class="col-header">TOP 3 THEMES</h3>
+                                    <div id="featured-themes-list" class="themes-checklist">
+                                        <div class="check-item"><span class="check-icon">✓</span> <span>Navigation lag on mobile Safari</span></div>
+                                        <div class="check-item"><span class="check-icon">✓</span> <span>Onboarding friction in step 3</span></div>
+                                        <div class="check-item"><span class="check-icon">✓</span> <span>Request for dark-mode toggle</span></div>
+                                    </div>
+                                </div>
+
+                                <div class="col-quotes">
+                                    <h3 class="col-header">VERBATIM QUOTES</h3>
+                                    <div id="featured-quotes-list" class="quotes-display">
+                                        <div class="verbatim-item">"The app feels fast, but the login flow takes forever..."</div>
+                                        <div class="verbatim-item">"I love the new charts, but where is the export button?"</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-actions">
+                                    <h3 class="col-header">ACTION IDEAS</h3>
+                                    <div id="featured-actions-list" class="actions-display">
+                                        <div class="pin-item"><span class="pin-icon">📍</span> <span>Optimize React-Query pre-fetching</span></div>
+                                        <div class="pin-item"><span class="pin-icon">📍</span> <span>Update 'Export' UI visibility</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Stats Sidebar Column -->
+                        <div class="stats-col">
+                            <!-- Card 1: Weekly Sentiment Score -->
+                            <div class="bento-card sentiment-score-card dark-bg-card">
+                                <div class="card-top">
+                                    <span class="card-label">WEEKLY SENTIMENT</span>
+                                    <span class="dot-success">●</span>
+                                </div>
+                                <div class="score-display">
+                                    <span class="big-number" id="sentiment-score-val">84</span>
+                                    <span class="score-max">/100</span>
+                                </div>
+                                <p class="score-desc" id="sentiment-trend-desc">Up 12% from last week. Positive reception of the v2.4 performance patch.</p>
+                                <div class="sentiment-bar-wrap">
+                                    <div class="bar-labels">
+                                        <span>Criticism</span>
+                                        <span>Delight</span>
+                                    </div>
+                                    <div class="sentiment-progress">
+                                        <div class="progress-criticism" style="width: 16%;"></div>
+                                        <div class="progress-delight" style="width: 84%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 2: Integration Status -->
+                            <div class="bento-card integration-status-card">
+                                <div class="card-top mb-2">
+                                    <span class="card-label text-muted">INTEGRATION STATUS</span>
+                                </div>
+                                <div class="integration-item">
+                                    <div class="status-circle success">✓</div>
+                                    <div class="status-text-block">
+                                        <strong>Google Docs</strong>
+                                        <span id="gdocs-sync-text">Pulse #84 Synchronized</span>
+                                    </div>
+                                </div>
+                                <div class="integration-item mt-3">
+                                    <div class="status-circle primary">•••</div>
+                                    <div class="status-text-block">
+                                        <strong>Gmail Draft</strong>
+                                        <span id="gmail-sync-text">Review required for sender list</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Table Below: Pulse Archive -->
+                    <div class="bento-card archive-table-card mt-6">
+                        <div class="archive-header">
+                            <h2 class="card-title">Pulse Archive</h2>
+                            <div class="search-box small">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" placeholder="Search archive..." aria-label="Search pulse archives">
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="stitch-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Sentiment Trend</th>
+                                        <th>Themes Highlighted</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-archives">
+                                    <tr>
+                                        <td><strong>Oct 14 - Oct 20</strong><br><span class="text-sub">Pulse #83</span></td>
+                                        <td><span class="trend-up">↗ 72/100 (+4)</span></td>
+                                        <td><span class="tag-pill">API Latency</span> <span class="tag-pill">CSV Export</span></td>
+                                        <td><span class="status-pill-green">● DELIVERED</span></td>
+                                        <td><button class="btn-dots">⋮</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Sep 30 - Oct 06</strong><br><span class="text-sub">Pulse #81</span></td>
+                                        <td><span class="trend-up">↗ 76/100 (+2)</span></td>
+                                        <td><span class="tag-pill">New Sidebar</span> <span class="tag-pill">Docs UI</span></td>
+                                        <td><span class="status-pill-green">● DELIVERED</span></td>
+                                        <td><button class="btn-dots">⋮</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-footer">
+                            <button class="btn-load-more" onclick="loadArchives()">Load 50 More Pulses</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 2: SENTIMENT THEMES / CLUSTERING ENGINE (Stitch Image 2) -->
+                <section id="tab-themes" class="tab-content">
+                    <div class="section-header-row">
+                        <div>
+                            <h1 class="page-title">Clustering &amp; Theming Engine</h1>
+                            <p class="page-subtitle">Aggregating 12,408 reviews into actionable sentiment clusters using LLM-driven thematic extraction.</p>
+                        </div>
+                    </div>
+
+                    <!-- Top Section: Velocity Card & Weekly Focus -->
+                    <div class="themes-top-grid">
+                        <div class="bento-card velocity-card">
+                            <span class="card-label">GLOBAL SENTIMENT VELOCITY</span>
+                            <div class="velocity-row">
+                                <div class="velocity-stats">
+                                    <span class="huge-number">+12.4%</span>
+                                    <span class="text-success font-semibold">Positive Shift</span>
+                                </div>
+                                <div class="sparkline-icon">📈</div>
+                            </div>
+                        </div>
+
+                        <div class="bento-card focus-card">
+                            <div class="card-top mb-3">
+                                <span class="card-label">Top 3 Weekly Focus</span>
+                            </div>
+                            <div class="focus-list" id="focus-list-container">
+                                <div class="focus-item">
+                                    <div class="focus-top"><strong>Delivery Speed</strong> <span class="priority-pill p1">PRIORITY 1</span></div>
+                                    <p>Significant negative clusters around 'last mile' delays in EMEA.</p>
+                                </div>
+                                <div class="focus-item">
+                                    <div class="focus-top"><strong>UI Responsiveness</strong> <span class="priority-pill p2">PRIORITY 2</span></div>
+                                    <p>Growing positive trends for the new bento navigation update.</p>
+                                </div>
+                                <div class="focus-item">
+                                    <div class="focus-top"><strong>Billing Clarity</strong> <span class="priority-pill p3">PRIORITY 3</span></div>
+                                    <p>Ambiguous invoices cited by 4% of enterprise churn reports.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Middle Section: Current Top 5 Themes 5-Column Grid -->
+                    <div class="mt-8">
+                        <h2 class="section-heading mb-4">Current Top 5 Themes</h2>
+                        <div class="top5-themes-grid" id="top5-themes-grid">
+                            <!-- Populated dynamically via app.js -->
+                            <div class="theme-col-card">
+                                <div class="theme-card-top"><strong>Delivery Speed</strong> <span class="icon">🕒</span></div>
+                                <div class="theme-count">4,203 Reviews</div>
+                                <div class="density-row"><span>Density</span> <strong>78%</strong></div>
+                                <div class="density-bar"><div class="fill blue" style="width: 78%;"></div></div>
+                                <div class="sentiment-row"><span>Sentiment</span> <strong class="text-danger">Negative</strong></div>
+                                <div class="sentiment-bar"><div class="fill red" style="width: 30%;"></div></div>
+                                <div class="keywords-wrap"><span class="kw-pill">Tracking</span> <span class="kw-pill">Late</span></div>
+                            </div>
+                            <div class="theme-col-card">
+                                <div class="theme-card-top"><strong>Order Accuracy</strong> <span class="icon">🎯</span></div>
+                                <div class="theme-count">2,811 Reviews</div>
+                                <div class="density-row"><span>Density</span> <strong>62%</strong></div>
+                                <div class="density-bar"><div class="fill blue" style="width: 62%;"></div></div>
+                                <div class="sentiment-row"><span>Sentiment</span> <strong class="text-success">Positive</strong></div>
+                                <div class="sentiment-bar"><div class="fill green" style="width: 85%;"></div></div>
+                                <div class="keywords-wrap"><span class="kw-pill">Fresh</span> <span class="kw-pill">Missing</span></div>
+                            </div>
+                            <div class="theme-col-card">
+                                <div class="theme-card-top"><strong>Mobile UX</strong> <span class="icon">📱</span></div>
+                                <div class="theme-count">1,942 Reviews</div>
+                                <div class="density-row"><span>Density</span> <strong>45%</strong></div>
+                                <div class="density-bar"><div class="fill blue" style="width: 45%;"></div></div>
+                                <div class="sentiment-row"><span>Sentiment</span> <strong class="text-success">Very Positive</strong></div>
+                                <div class="sentiment-bar"><div class="fill green" style="width: 95%;"></div></div>
+                                <div class="keywords-wrap"><span class="kw-pill">Login</span></div>
+                            </div>
+                            <div class="theme-col-card">
+                                <div class="theme-card-top"><strong>Customer Support</strong> <span class="icon">🎧</span></div>
+                                <div class="theme-count">1,105 Reviews</div>
+                                <div class="density-row"><span>Density</span> <strong>31%</strong></div>
+                                <div class="density-bar"><div class="fill blue" style="width: 31%;"></div></div>
+                                <div class="sentiment-row"><span>Sentiment</span> <strong class="text-muted">Neutral</strong></div>
+                                <div class="sentiment-bar"><div class="fill yellow" style="width: 50%;"></div></div>
+                                <div class="keywords-wrap"><span class="kw-pill">Refund</span></div>
+                            </div>
+                            <div class="theme-col-card">
+                                <div class="theme-card-top"><strong>Packaging</strong> <span class="icon">📦</span></div>
+                                <div class="theme-count">884 Reviews</div>
+                                <div class="density-row"><span>Density</span> <strong>18%</strong></div>
+                                <div class="density-bar"><div class="fill blue" style="width: 18%;"></div></div>
+                                <div class="sentiment-row"><span>Sentiment</span> <strong class="text-success">Positive</strong></div>
+                                <div class="sentiment-bar"><div class="fill green" style="width: 80%;"></div></div>
+                                <div class="keywords-wrap"><span class="kw-pill">Sustainable</span> <span class="kw-pill">Safe</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Section: Verbatim Preview & Cohesion Pulse -->
+                    <div class="themes-bottom-grid mt-8">
+                        <!-- Left Panel: Verbatim Preview -->
+                        <div class="bento-card verbatim-panel">
+                            <div class="panel-header-flex">
+                                <h3>💬 Verbatim Preview: <span class="text-primary">Delivery Speed</span></h3>
+                                <div class="header-tools">
+                                    <button class="btn-icon-small">🎚️</button>
+                                    <button class="btn-icon-small">📥</button>
+                                </div>
+                            </div>
+                            <div class="verbatim-cards-list" id="verbatim-cards-container">
+                                <div class="quote-preview-card">
+                                    <p class="quote-text">"My order was supposed to arrive by Friday but it didn't get here until Tuesday. The tracking info stayed stuck in 'Processing' for three days straight. Very frustrating when you need things on time."</p>
+                                    <div class="quote-footer">
+                                        <span class="user-meta">User #8291 • London, UK</span>
+                                        <span class="tag-danger">⊗ Extreme Delay</span>
+                                    </div>
+                                </div>
+                                <div class="quote-preview-card mt-4">
+                                    <p class="quote-text">"Honestly, the delivery is getting slower every month. I used to get my weekly pulse orders within 24 hours, now it's taking at least 72. What changed?"</p>
+                                    <div class="quote-footer">
+                                        <span class="user-meta">User #1105 • Berlin, DE</span>
+                                        <span class="tag-info">〰 Regression</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Theming Engine Pulse -->
+                        <div class="bento-card pulse-control-panel">
+                            <div class="card-top mb-2">
+                                <span class="card-label">Theming Engine Pulse</span>
+                            </div>
+                            <div class="cohesion-row">
+                                <div class="cohesion-gauge">
+                                    <span>94%</span>
+                                </div>
+                                <div class="cohesion-text">
+                                    <strong>Cluster Cohesion</strong>
+                                    <p>Current thematic clusters show high semantic similarity. Ready for pulse export.</p>
+                                </div>
+                            </div>
+
+                            <div class="live-synthesis-banner mt-6">
+                                <div class="banner-content">
+                                    <span class="banner-btn">LIVE SYNTHESIS •••</span>
+                                </div>
+                            </div>
+
+                            <div class="pulse-actions mt-6">
+                                <button class="btn btn-dark-block" onclick="triggerLivePulse()">
+                                    <span>✨ Generate Next Weekly Pulse</span>
+                                </button>
+                                <button class="btn btn-outline-block mt-3" onclick="alert('Cluster sensitivity calibrated to 0.4 temperature.')">
+                                    <span>⚙️ Adjust Cluster Sensitivity</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 3: PIPELINE OVERVIEW (Analytics View) -->
+                <section id="tab-overview" class="tab-content">
+                    <div class="section-header-row">
+                        <div>
+                            <h1 class="page-title">4-Stage Pipeline Intelligence</h1>
+                            <p class="page-subtitle">Real-time data exploration across 159 normalized Swiggy mobile store reviews.</p>
+                        </div>
+                    </div>
+
+                    <div class="overview-metrics-grid">
+                        <div class="bento-card stat-box">
+                            <span class="card-label">ANALYZED WINDOW</span>
+                            <div class="big-number mt-2" id="val-total-reviews">159</div>
+                            <span class="text-success text-sm">✓ 8–12 Week Window</span>
+                        </div>
+                        <div class="bento-card stat-box">
+                            <span class="card-label">STORE VOLUME SPLIT</span>
+                            <div class="big-number mt-2" id="val-store-split">50% : 50%</div>
+                            <div class="split-bar-container mt-2">
+                                <div class="split-bar-play" id="bar-play-width" style="width: 50%;"></div>
+                                <div class="split-bar-apple" id="bar-apple-width" style="width: 50%;"></div>
+                            </div>
+                        </div>
+                        <div class="bento-card stat-box">
+                            <span class="card-label">AVG SATISFACTION</span>
+                            <div class="big-number mt-2" id="val-avg-rating">3.00 ⭐</div>
+                            <span class="text-muted text-sm">1⭐ to 5⭐ Aggregated</span>
+                        </div>
+                    </div>
+
+                    <div class="charts-grid mt-6">
+                        <div class="bento-card chart-box">
+                            <h3 class="card-title mb-4">⭐ Star Rating Breakdown</h3>
+                            <div class="canvas-container">
+                                <canvas id="chart-ratings"></canvas>
+                            </div>
+                        </div>
+                        <div class="bento-card chart-box">
+                            <h3 class="card-title mb-4">🔥 Domain Theme Severity Index</h3>
+                            <div class="canvas-container">
+                                <canvas id="chart-themes-severity"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 4: CONFIGURATION -->
+                <section id="tab-config" class="tab-content">
+                    <div class="section-header-row">
+                        <div>
+                            <h1 class="page-title">AI Engine &amp; MCP Configuration</h1>
+                            <p class="page-subtitle">Manage environment variables, LLM parameters, and workspace credentials.</p>
+                        </div>
+                    </div>
+
+                    <div class="config-grid">
+                        <div class="bento-card">
+                            <h3 class="card-title mb-4">🤖 Active Inference Engine</h3>
+                            <div class="config-row">
+                                <label>Groq Model:</label>
+                                <code>llama-3.3-70b-versatile</code>
+                            </div>
+                            <div class="config-row">
+                                <label>Temperature:</label>
+                                <code>0.4 (Strict Grounded Synthesis)</code>
+                            </div>
+                            <div class="config-row">
+                                <label>Word Ceiling:</label>
+                                <code>250 words max</code>
+                            </div>
+                        </div>
+
+                        <div class="bento-card">
+                            <h3 class="card-title mb-4">☁️ Google Workspace MCP Connection</h3>
+                            <div class="config-row">
+                                <label>Target Email Address:</label>
+                                <code id="config-target-email">test@example.com</code>
+                            </div>
+                            <div class="config-row">
+                                <label>Google Doc ID:</label>
+                                <code id="config-doc-id">17Uam8Sm6woB9Ten1lsRNepKUtAVklsFsl6ItI59sEdk</code>
+                            </div>
+                            <div class="config-row">
+                                <label>Remote Server URL:</label>
+                                <code>https://vgdotcom-google-workspace-mcp.hf.space/sse</code>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Bottom Status Bar matching Stitch Design -->
+            <footer class="stitch-footer">
+                <div class="footer-left">
+                    <strong>REVIEW PULSATOR © 2026</strong> • <span class="text-success">MCP Status: Google Docs Connected</span> • <span class="text-primary">Gmail: Active</span>
+                </div>
+                <div class="footer-right">
+                    <a href="#">System Status</a>
+                    <a href="#">Documentation</a>
+                    <a href="#">Privacy</a>
+                    <a href="#">Support</a>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Modal for viewing Original Stitch Design Mockups -->
+    <div id="design-modal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" onclick="closeDesignModal()"></div>
+        <div class="modal-content bento-card">
+            <div class="modal-header">
+                <h3>🎨 Original Google Stitch UI Design Mockups</h3>
+                <button class="btn-close" onclick="closeDesignModal()">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-4 text-muted">Compare our live reactive web application directly against your original Google Stitch design screenshots.</p>
+                <div class="mockups-gallery">
+                    <div class="mockup-item">
+                        <h4>Stitch Screen 1: Weekly Pulses History</h4>
+                        <img src="images/stitch_weekly_pulses.png" alt="Stitch Weekly Pulses Mockup" class="img-preview">
+                    </div>
+                    <div class="mockup-item mt-6">
+                        <h4>Stitch Screen 2: Clustering &amp; Theming Engine</h4>
+                        <img src="images/stitch_clustering_engine.png" alt="Stitch Clustering Engine Mockup" class="img-preview">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast" role="alert" aria-live="assertive">
+        <span class="toast-icon">✓</span>
+        <span class="toast-message" id="toast-message">Action completed successfully!</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
