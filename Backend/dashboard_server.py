@@ -25,11 +25,23 @@ from review_pulsator.cli import run_pipeline
 logger = logging.getLogger("dashboard_server")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)-8s | %(message)s")
 
-PORT = int(os.getenv("PORT", 8080))
+PORT = int(os.getenv("PORT", 7860))
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def _safe_makedirs(path: str) -> str:
+    try:
+        os.makedirs(path, exist_ok=True)
+        return path
+    except Exception as e:
+        logger.warning(f"Could not create directory {path} ({e}), falling back to /tmp")
+        fallback = os.path.join("/tmp", os.path.basename(path))
+        os.makedirs(fallback, exist_ok=True)
+        return fallback
+
 DASHBOARD_DIR = os.path.join(os.path.dirname(ROOT_DIR), "frontend")
 if not os.path.exists(DASHBOARD_DIR):
     DASHBOARD_DIR = os.path.join(ROOT_DIR, "frontend")
+DASHBOARD_DIR = _safe_makedirs(DASHBOARD_DIR)
 
 
 class PulsatorDashboardHandler(SimpleHTTPRequestHandler):
@@ -244,9 +256,9 @@ class PulsatorDashboardHandler(SimpleHTTPRequestHandler):
 
 
 def main():
-    os.makedirs(DASHBOARD_DIR, exist_ok=True)
-    os.makedirs(os.path.join(ROOT_DIR, "archives"), exist_ok=True)
-    os.makedirs(os.path.join(ROOT_DIR, "data"), exist_ok=True)
+    _safe_makedirs(DASHBOARD_DIR)
+    _safe_makedirs(os.path.join(ROOT_DIR, "archives"))
+    _safe_makedirs(os.path.join(ROOT_DIR, "data"))
     server_address = ("0.0.0.0", PORT)
     httpd = HTTPServer(server_address, PulsatorDashboardHandler)
     print("=" * 70)
