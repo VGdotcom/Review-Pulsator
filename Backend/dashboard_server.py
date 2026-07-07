@@ -68,8 +68,16 @@ class PulsatorDashboardHandler(SimpleHTTPRequestHandler):
         elif path == "/api/analytics":
             return self._handle_analytics()
         else:
-            # Serve static files from dashboard dir
-            if path == "/":
+            # Serve static files from dashboard dir if available, otherwise return API status
+            if path == "/" or path == "/index.html":
+                index_path = os.path.join(DASHBOARD_DIR, "index.html")
+                if not os.path.exists(index_path):
+                    return self._send_json(200, {
+                        "status": "ONLINE",
+                        "service": "Review Pulsator AI Engine Backend",
+                        "message": "Backend REST API is running! Frontend is hosted on Vercel.",
+                        "endpoints": ["/api/status", "/api/reports", "/api/analytics", "/api/trigger_pulse"]
+                    })
                 self.path = "/index.html"
             return super().do_GET()
 
@@ -237,6 +245,8 @@ class PulsatorDashboardHandler(SimpleHTTPRequestHandler):
 
 def main():
     os.makedirs(DASHBOARD_DIR, exist_ok=True)
+    os.makedirs(os.path.join(ROOT_DIR, "archives"), exist_ok=True)
+    os.makedirs(os.path.join(ROOT_DIR, "data"), exist_ok=True)
     server_address = ("0.0.0.0", PORT)
     httpd = HTTPServer(server_address, PulsatorDashboardHandler)
     print("=" * 70)
