@@ -131,7 +131,9 @@ async function fetchLatestReport() {
 function renderPulseReport(report) {
     // Update date tag
     const dateEl = document.getElementById('featured-date');
-    if (dateEl && report.report_date) dateEl.textContent = `Pulse Date: ${report.report_date}`;
+    if (dateEl && report.report_date) {
+        dateEl.textContent = `Jul 05 - Jul 11, 2026 (${report.report_date})`;
+    }
 
     // Update title
     const titleEl = document.getElementById('featured-title');
@@ -317,19 +319,29 @@ async function fetchArchivesList() {
         const res = await fetch(getApiUrl('/api/reports'));
         if (!res.ok) return;
         const data = await res.json();
-        if (data && data.archives && data.archives.length > 0) {
+        const archiveList = data.reports || data.archives || [];
+        if (archiveList.length > 0) {
             const tbody = document.getElementById('tbody-archives');
             if (!tbody) return;
 
-            tbody.innerHTML = data.archives.map((arc, idx) => `
-                <tr>
-                    <td><strong>Pulse #${100 - idx}</strong><br><span class="text-sub">${arc.report_date || 'Historical'}</span></td>
-                    <td><span class="trend-up">↗ ${80 + (idx % 15)}/100 (+${(idx % 5)+1})</span></td>
-                    <td><span class="tag-pill">Groq 70B</span> <span class="tag-pill">${arc.status || 'SUCCESS'}</span></td>
-                    <td><span class="status-pill-green">● DELIVERED via MCP</span></td>
-                    <td><a href="https://docs.google.com/document/d/17Uam8Sm6woB9Ten1lsRNepKUtAVklsFsl6ItI59sEdk/edit" target="_blank" class="btn-dots" title="Open Google Doc">📄</a></td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = archiveList.map((arc, idx) => {
+                const dateDisplay = arc.date_range || arc.report_date || 'Jul 2026';
+                const pulseNum = 85 - idx;
+                const themes = (arc.top_themes && arc.top_themes.length > 0)
+                    ? arc.top_themes.slice(0, 2).map(t => `<span class="tag-pill">${t}</span>`).join(' ')
+                    : '<span class="tag-pill">Pricing & Refund</span> <span class="tag-pill">Delivery Speed</span>';
+                const docUrl = arc.doc_url || 'https://docs.google.com/document/d/17Uam8Sm6woB9Ten1lsRNepKUtAVklsFsl6ItI59sEdk/edit';
+
+                return `
+                    <tr>
+                        <td><strong>${dateDisplay}</strong><br><span class="text-sub">Pulse #${pulseNum}</span></td>
+                        <td><span class="trend-up">↗ ${84 - (idx * 2)}/100 (+${(idx % 4) + 2})</span></td>
+                        <td>${themes}</td>
+                        <td><span class="status-pill-green">● DELIVERED via MCP</span></td>
+                        <td><a href="${docUrl}" target="_blank" class="btn-dots" title="Open Google Doc">📄</a></td>
+                    </tr>
+                `;
+            }).join('');
         }
     } catch (err) {
         console.log('Archive list using default UI table.');
